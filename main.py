@@ -27,7 +27,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif "создай фото" in text:
         await update.message.reply_text("🖼️ Функция генерации фото будет доступна после настройки API-ключа. Но я готов рисовать!")
     else:
-        await update.message.reply_text("Я Яндекс🤖. Спроси про создателя!")
+        await update.message.reply_text("Привет, создатель Абдугани! Чем могу помочь?🤖")
 
 if __name__ == "__main__":
     app = ApplicationBuilder().token(TOKEN).build()
