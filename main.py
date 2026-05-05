@@ -1,50 +1,58 @@
-import os
-import logging
-from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
+    # Подготовка текста для проверки
+    text_low = text.lower()
 
-logging.basicConfig(level=logging.INFO)
+    # --- БЛОК 1: КРУТОЙ ДИЗАЙН ПРО СОЗДАТЕЛЯ ---
+    if any(word in text_low for word in ["кто создатель", "создатель", "кто тебя сделал"]):
+        caption = (
+            "<b>─── 🧬 SYSTEM INFO ───</b>\n\n"
+            "👤 <b>Creator:</b> <code>Обувь Абдугани</code>\n"
+            "⭐ <i>Status: Lead Developer</i>\n\n"
+            "👨‍⚕️ <b>Family Root:</b>\n"
+            "└ <b>Якубов Фуркат Убайдуллоевич</b>\n"
+            "   👨‍⚕️ <code>Травматолог-ортопед</code>\n"
+            "   🏥 <i>Professional Medical Support</i>\n\n"
+            "<b>──────────────────</b>"
+        )
+        # Если хочешь, можно добавить ссылку на фото создателя
+        await update.message.reply_html(caption)
 
-TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+    # --- БЛОК 2: ПРОФЕССИОНАЛЬНЫЙ ОТВЕТ ПРО ПАПУ ---
+    elif "фуркат" in text_low or "травматолог" in text_low:
+        doctor_card = (
+            "<b>🏥 КАРТОЧКА СПЕЦИАЛИСТА</b>\n"
+            "━━━━━━━━━━━━━━━━━━━━\n"
+            "👨‍⚕️ <b>Врач:</b> Якубов Фуркат Убайдуллоевич\n"
+            "🩺 <b>Специализация:</b> Травматолог-ортопед\n"
+            "💎 <b>Опыт:</b> Высшая категория\n"
+            "━━━━━━━━━━━━━━━━━━━━\n"
+            "<i>Лучший специалист в своей области!</i>"
+        )
+        await update.message.reply_html(doctor_card)
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_html("<b>Привет, создатель Абдугани!</b> ✨\nЯ твой верный помощник Яндекс. Спрашивай что угодно!")
-
-async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    text = update.message.text.lower()
-    
-    # 1. Приветствие
-    if text in ["привет", "хай", "здравствуй"]:
-        await update.message.reply_html("👋 <b>Привет, мой создатель Якубов Абдугани!</b> Чем я могу тебе помочь?")
-    
-    # 2. О создателе
-    elif "это кто" in text or "создатель" in text:
-        await update.message.reply_html("👑 <b>Это мой создатель Якубов Абдугани</b>")
-    
-    # 3. О папе
-    elif "якубов фуркат убайдуллоевич" in text:
-        await update.message.reply_html("👨‍⚕️ <b>Это травматолог-ортопед и папа Якубова Абдугани</b>")
-    
-    # 4. Математика (включая умножение x и ×)
-    elif any(char in text for char in "+-*/×x"):
-        try:
-            calc_text = text.replace('×', '*').replace('x', '*')
-            # Убираем все лишнее, оставляем только цифры и знаки
-            safe_text = "".join(c for c in calc_text if c in "0123456789+-*/(). ")
-            result = eval(safe_text)
-            await update.message.reply_html(f"🔢 <b>Результат:</b> <code>{result}</code>")
-        except:
-            await update.message.reply_text("Не смог посчитать, напиши пример проще!")
-            
-    # 5. Фото
-    elif "создай фото" in text:
-        await update.message.reply_text("🖼️ <b>Я готов рисовать!</b> Опиши, что ты хочешь увидеть на фото?")
+    # --- БЛОК 3: ГЕНЕРАЦИЯ ФОТО (С КРУТЫМ ДИЗАЙНОМ) ---
+    elif text_low.startswith("создай ") or text_low.startswith("рисуй "):
+        prompt = text.replace("создай ", "").replace("рисуй ", "")
         
-    else:
-        await update.message.reply_text("Я Яндекс🤖. Спроси про создателя или напиши пример!")
+        waiting_msg = await update.message.reply_html("<b>🎨 ИИ генерирует ваш шедевр...</b>\n<code>[▒▒▒▒▒▒▒▒▒▒] 0%</code>")
+        
+        # Ссылка на генерацию
+        image_url = f"https://pollinations.ai{prompt}?width=1024&height=1024&model=flux"
+        
+        try:
+            await waiting_msg.edit_text("<b>🎨 Фото готово! Отправляю...</b>", parse_mode='HTML')
+            await update.message.reply_photo(
+                photo=image_url, 
+                caption=f"<b>🖼 Результат генерации:</b>\n«<code>{prompt}</code>»",
+                parse_mode='HTML'
+            )
+        except:
+            await update.message.reply_text("❌ Ошибка при связи с нейросетью.")
 
-if __name__ == "__main__":
-    app = ApplicationBuilder().token(TOKEN).build()
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-    app.run_polling()
+    # --- БЛОК 4: УМНАЯ МАТЕМАТИКА ---
+    elif any(char in text for char in "+-*/"):
+        try:
+            safe_text = "".join(c for c in text if c in "0123456789+-*/.()")
+            result = eval(safe_text)
+            await update.message.reply_html(f"<b>🔢 CALCULATOR</b>\n└ <b>Результат:</b> <code>{result}</code>")
+        except:
+            pass # Если это не пример, просто молчим
